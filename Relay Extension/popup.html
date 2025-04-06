@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Relay - LinkedIn Assistant</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <script src="/lib/lottie-player.js"></script>
+
+    <style>
+      /* --- Define Local Font --- */
+      @font-face {
+        font-family: 'Stabil Grotesk';
+        src: url('fonts/StabilGrotesk-Medium.otf') format('opentype');
+        font-weight: 500;
+        font-style: normal;
+      }
+
+      /* --- General Styles --- */
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 380px; /* Fixed width for the popup */
+        /* Consider setting a fixed height or min-height if needed, */
+        /* or let content determine height */
+        /* height: 550px; */
+        display: flex;
+        flex-direction: column; /* Make body a flex column */
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 14px;
+        background-color: #F0F0F0;
+        color: #333;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      *, *:before, *:after {
+        box-sizing: border-box;
+      }
+
+      /* Make content area grow and allow scrolling if needed */
+      .popup-content {
+         padding: 30px;
+         flex-grow: 1;
+         overflow-y: auto; /* Add scroll if content exceeds height */
+      }
+
+      /* --- Popup Header Styles (Unchanged) --- */
+      .popup-header {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 12px 30px 10px 12px; background-color: #F0F0F0;
+          border-bottom: 1px solid #e0e0e0;
+          flex-shrink: 0; /* Prevent header from shrinking */
+       }
+      .header-left { display: flex; align-items: center; }
+      .popup-logo { height: 40px; width: auto; margin-right: 8px; vertical-align: middle; }
+      #close-popup-button { background: none; border: none; padding: 0; cursor: pointer; line-height: 0; display: flex; align-items: center; justify-content: center; }
+      #close-popup-button img { height: 20px; width: auto; vertical-align: middle; opacity: 0.6; }
+      #close-popup-button:hover img { opacity: 1; }
+
+      /* General Heading Styles (Unchanged) */
+      h2 { font-family: 'Stabil Grotesk', sans-serif; font-size: 24px; font-weight: 500; color: #000000; line-height: 1.2; margin-top: 0; margin-bottom: 15px; border-bottom: none; padding-bottom: 0; }
+
+      /* Divider Styling (Unchanged) */
+      hr.section-divider { border: none; height: 1px; background-color: #D3D3D3; margin-top: 25px; margin-bottom: 25px; }
+
+      /* #summary Styling (Unchanged) */
+      #summary {
+          width: 100%; height: 220px; background-color: #DEDDDB; border-radius: 8px; padding: 15px; margin-bottom: 0; box-sizing: border-box;
+          display: flex; justify-content: center; align-items: center; font-family: 'Inter', sans-serif; font-size: 13px; color: #2A2A2A;
+          line-height: 1.5; white-space: pre-wrap; overflow-y: auto; font-style: normal; font-weight: 500;
+      }
+      #summary.loaded { display: block; justify-content: initial; align-items: initial; }
+      #summary.error { display: block; justify-content: initial; align-items: initial; color: #C0392B; font-weight: normal; }
+      #summary:not(.loaded):not(.error) { font-weight: normal; color: #7C7C7C; }
+
+
+      /* #message Textarea Styling (Unchanged) */
+      #generated-message-section #message {
+          background-color: #DEDDDB; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 15px; font-size: 13px;
+          line-height: 1.5; color: #2A2A2A; height: 210px; width: 100%; box-sizing: border-box; font-family: 'Inter', sans-serif;
+          font-weight: 500; resize: vertical; margin-top: 8px;
+      }
+
+      /* Placeholder Styling for #message (Unchanged) */
+      #generated-message-section #message::placeholder {
+          color: #7C7C7C; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 13px; opacity: 1;
+      }
+
+      /* General Button Styles (Background removed) */
+      button { border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; border-radius: 4px; background: none; }
+      button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+       /* Request Options Styling (Unchanged) */
+       .request-options { margin-top: 10px; margin-bottom: 10px; }
+       .request-options label {
+           display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; background-color: #DEDDDB; height: 52px; width: 100%;
+           border-radius: 8px; margin-bottom: 10px; padding-left: 16px; padding-right: 18px; font-family: 'Inter', sans-serif; font-weight: 500;
+           font-size: 14px; color: #000000; box-sizing: border-box; cursor: pointer; border: 1px solid transparent; transition: border-color 0.2s ease;
+       }
+       .request-options input[type="radio"] { width: 16px; height: 16px; margin: 0; accent-color: #555; cursor: pointer; }
+       .request-options label:has(input:checked) { border: 1px solid #000000; }
+       .request-options label:has(input:checked) input[type="radio"] { accent-color: #000000; }
+
+       /* Custom Prompt Input Styling (Unchanged) */
+       #custom-prompt-container { margin-top: 0; margin-bottom: 10px; display: none; }
+        #custom-prompt-input {
+           width: 100%; height: 52px; background-color: #FFFFFF; border-radius: 8px; border: 1px solid #DEDDDB; padding: 0 18px 0 16px;
+           font-family: 'Inter', sans-serif; font-weight: 500; font-size: 14px; color: #333; box-sizing: border-box;
+       }
+       #custom-prompt-input::placeholder { color: #818181; font-weight: 500; font-family: 'Inter', sans-serif; font-size: 14px; }
+       #custom-prompt-input:focus { outline: none; border-color: #000000; box-shadow: 0 0 0 1px #000000; }
+
+       /* Generate Button Styling (Unchanged) */
+       button#generate-button {
+           width: 100%; height: 50px; background-color: #000000; color: #FFFFFF; font-family: 'Stabil Grotesk', sans-serif; font-size: 16px;
+           border-radius: 8px; margin-top: 15px; margin-bottom: 0; border: none; transition: background-color 0.2s ease, opacity 0.2s ease;
+       }
+       button#generate-button:hover:not(:disabled) { background-color: #333; }
+       button#generate-button:disabled { background-color: #000000; opacity: 0.5; cursor: not-allowed; }
+
+       /* Collapsible Section Styles (Unchanged) */
+       #generated-message-section { margin-bottom: 10px; overflow: hidden; }
+        #generated-message-header { display: flex; align-items: center; cursor: pointer; padding-bottom: 8px; user-select: none; }
+       #generated-message-header h2.section-title { font-family: 'Stabil Grotesk', sans-serif; font-size: 24px; font-weight: 500; color: #000000; line-height: 1; margin: 0; }
+       #toggle-message-chevron { display: inline-flex; align-items: center; margin-left: auto; }
+       #toggle-message-chevron svg { width: 16px; height: 16px; fill: currentColor; transition: transform 0.2s ease-in-out; flex-shrink: 0; display: block; }
+       #generated-message-section.collapsed #message { display: none; }
+       #generated-message-section.collapsed #toggle-message-chevron svg { transform: rotate(0deg); }
+       #generated-message-section:not(.collapsed) #message { display: block; }
+       #generated-message-section:not(.collapsed) #toggle-message-chevron svg { transform: rotate(90deg); }
+
+       /* Copy Button Container Styling */
+       .copy-button-container {
+         margin-top: 15px; /* Space above copy button */
+         text-align: left; /* Align copy button to the left */
+       }
+
+       /* Copy Button Styling */
+       button#copy-button {
+          /* MODIFIED: Needs background color again */
+          background-color: #ffffff;
+          color: #000000;
+          font-family: 'Inter', sans-serif;
+          font-weight: 500;
+          font-size: 14px;
+          height: 32px;
+          width: 83px;
+          padding: 6px 10px;
+          border-radius: 6px;
+          flex-grow: 0;
+          flex-shrink: 0;
+          border: 1px solid #e0e0e0;
+          display: inline-flex; /* Keep inline-flex */
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          transition: background-color 0.2s ease, color 0.2s ease;
+          box-sizing: border-box;
+       }
+       button#copy-button:hover:not(:disabled) { background-color: #f0f0f0; }
+       button#copy-button:disabled { background-color: #ffffff; opacity: 0.6; }
+       button#copy-button .icon { width: 16px; height: 16px; vertical-align: middle; }
+       button#copy-button.copied { background-color: #00AE00; color: #ffffff; border-color: #00AE00; }
+       button#copy-button.copied:hover:not(:disabled) { background-color: #009a00; }
+
+
+      /* --- Footer Area --- */
+       .popup-footer {
+         padding: 15px 30px; /* Padding matches .popup-content */
+         border-top: 1px solid #D3D3D3; /* Divider line */
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         flex-shrink: 0; /* Prevent footer from shrinking */
+         background-color: #F0F0F0; /* Match body background */
+       }
+
+       /* Made By Text Styling */
+       .made-by {
+         font-family: 'Inter', sans-serif;
+         font-weight: 500; /* Medium */
+         font-size: 12px;
+         color: #000000;
+         white-space: nowrap;
+         margin-right: 10px; /* Add some space between text and button */
+       }
+       .made-by a { color: #000000; text-decoration: underline; }
+       .made-by a:hover { text-decoration: none; }
+
+
+       /* Settings Button Styling (Ghost Button) */
+       button#open-settings-button {
+           background-color: transparent;
+           color: #000000;
+           padding: 6px 0px; /* Adjusted padding */
+           flex-shrink: 0;
+           border: none;
+           border-radius: 6px;
+           height: 32px;
+           box-sizing: border-box;
+           font-family: 'Inter', sans-serif;
+           font-weight: 500;
+           font-size: 14px;
+           display: inline-flex;
+           align-items: center;
+           justify-content: center;
+           gap: 5px;
+           transition: background-color 0.2s ease;
+        }
+       button#open-settings-button:hover {
+           background-color: rgba(0, 0, 0, 0.05);
+        }
+       button#open-settings-button .icon {
+         width: 16px; height: 16px; vertical-align: middle;
+       }
+
+    </style>
+</head>
+<body>
+
+    <div class="popup-header">
+        <div class="header-left"> <img src="images/logo.png" alt="Relay Logo" class="popup-logo"> </div>
+        <button id="close-popup-button" title="Close"> <img src="images/close.svg" alt="Close"> </button>
+    </div>
+
+    <div class="popup-content">
+        <h2>Who is this person?</h2>
+        <div id="summary">
+            Loading profile summary...
+        </div>
+
+        <hr class="section-divider">
+
+        <h2>Personalized Note</h2>
+        <div id="request-options" class="request-options">
+             <label><input type="radio" name="messageType" value="connection" checked> General Connection request</label>
+             <label><input type="radio" name="messageType" value="referral"> Ask for a referral</label>
+             <label><input type="radio" name="messageType" value="custom"> Custom Prompt</label>
+        </div>
+        <div id="custom-prompt-container">
+             <input type="text" id="custom-prompt-input" placeholder="Enter your Prompt here">
+        </div>
+        <button id="generate-button" disabled>Generate</button>
+
+        <hr class="section-divider">
+
+        <div id="generated-message-section" class="collapsible-section collapsed">
+             <div id="generated-message-header" aria-expanded="false" aria-controls="message">
+                 <h2 class="section-title">Generated Message</h2>
+                 <span id="toggle-message-chevron">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                         <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                       </svg>
+                 </span>
+             </div>
+             <textarea id="message" placeholder="Generate a message first..." disabled></textarea>
+        </div>
+
+        <div class="copy-button-container">
+            <button id="copy-button" disabled>
+                <img src="images/icon-copy.svg" alt="Copy" class="icon icon-copy" />
+                <img src="images/icon-copied.svg" alt="Copied" class="icon icon-copied" style="display: none;"/>
+                <span class="text">Copy</span>
+            </button>
+        </div>
+        </div>
+
+    <div class="popup-footer">
+         <span class="made-by">
+              Made by <a href="https://ramsiddarth.in/" target="_blank" rel="noopener noreferrer">Ramsiddarth</a>
+         </span>
+         <button id="open-settings-button">
+              <img src="images/icon-settings.svg" alt="Settings" class="icon" />
+              Settings
+         </button>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

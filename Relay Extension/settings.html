@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Relay Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* --- Define Local Font --- */
+    @font-face {
+      font-family: 'Stabil Grotesk';
+      src: url('fonts/StabilGrotesk-Medium.otf') format('opentype');
+      font-weight: 500; /* Medium */
+      font-style: normal;
+    }
+
+    /* --- General Styles --- */
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh; /* Ensure body takes full viewport height */
+    }
+
+    body {
+      background-color: #F0F0F0; /* MODIFIED */
+      font-family: 'Inter', system-ui, sans-serif; /* Default font */
+      padding: 40px 20px; /* Add some padding */
+      display: flex; /* MODIFIED */
+      flex-direction: column; /* MODIFIED */
+      align-items: center; /* MODIFIED - Center content horizontally */
+      box-sizing: border-box;
+    }
+
+    /* Content Wrapper for Centering and Width */
+    .settings-content {
+        width: 730px; /* MODIFIED - Set width for centering */
+        max-width: 100%; /* Prevent overflow on smaller screens (though responsiveness not required) */
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Logo */
+    .settings-logo {
+      display: block;
+      height: 48px; /* Adjust as needed */
+      width: auto;
+      margin-bottom: 40px; /* Space below logo */
+    }
+
+    /* Headings / Labels */
+    label {
+      display: block;
+      margin-top: 30px; /* Increased margin */
+      margin-bottom: 10px; /* Space between label and textarea */
+      font-family: 'Stabil Grotesk', sans-serif; /* MODIFIED */
+      font-size: 24px; /* MODIFIED */
+      font-weight: 500; /* MODIFIED */
+      color: #000000; /* MODIFIED */
+    }
+    label:first-of-type {
+        margin-top: 0; /* No top margin for the first label */
+    }
+
+    /* Text Areas */
+    textarea {
+      width: 100%; /* MODIFIED - Full width within .settings-content */
+      height: 180px; /* MODIFIED */
+      box-sizing: border-box;
+      padding: 12px 15px; /* MODIFIED - Reuse from popup */
+      margin-top: 0; /* Remove default margin */
+      font-size: 13px; /* MODIFIED */
+      border: 1px solid transparent; /* MODIFIED - Remove default border look */
+      border-radius: 8px; /* MODIFIED - Reuse from popup */
+      background-color: #DEDDDB; /* MODIFIED */
+      color: #2A2A2A; /* MODIFIED */
+      font-family: 'Inter', sans-serif; /* MODIFIED */
+      font-weight: 500; /* MODIFIED */
+      resize: vertical; /* Keep resize */
+    }
+     textarea:focus {
+        outline: none;
+        border-color: #000000; /* Add focus indicator */
+        box-shadow: 0 0 0 1px #000000;
+     }
+
+     /* Info Text */
+    p.info {
+      font-family: 'Inter', sans-serif; /* MODIFIED */
+      font-size: 13px; /* MODIFIED */
+      font-weight: 400; /* Regular */
+      color: #868686; /* MODIFIED */
+      margin-top: 8px; /* MODIFIED - Adjust spacing */
+      margin-bottom: 0;
+      line-height: 1.4;
+    }
+    p.info code { /* Keep code styling */
+        background-color: #ddd;
+        padding: 1px 3px;
+        border-radius: 3px;
+        font-size: 11px;
+    }
+
+    /* Save Button Styling */
+    button#save {
+      /* Reuse styles from #generate-button */
+      width: 200px; /* MODIFIED - Fixed width */
+      height: 50px;
+      background-color: #000000;
+      color: #FFFFFF;
+      font-family: 'Stabil Grotesk', sans-serif;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      transition: background-color 0.2s ease, opacity 0.2s ease;
+      margin: 40px auto 0 auto; /* MODIFIED - Center button horizontally */
+      cursor: pointer;
+      display: block; /* Needed for auto margin centering */
+    }
+    button#save:hover {
+      background-color: #333;
+    }
+    button#save:disabled { /* Add disabled state if needed */
+        background-color: #000000;
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Status Message */
+    #status {
+      margin-top: 15px;
+      color: green;
+      font-size: 13px;
+      min-height: 1.2em;
+      text-align: center; /* Center status message */
+    }
+
+  </style>
+</head>
+<body>
+
+  <img src="images/logo.png" alt="Relay Logo" class="settings-logo">
+
+  <div class="settings-content"> <label for="user-details">Your personal Details</label>
+      <textarea id="user-details" placeholder="e.g., Your Name, current role @ Company, studied X at Y University, interested in Z..."></textarea>
+      <p class="info">Enter info about yourself for personalizing connection messages.</p>
+
+      <label for="custom-summary-prompt">Custom Summary Prompt (Optional)</label>
+      <textarea id="custom-summary-prompt" placeholder="Example: Provide a 3-paragraph summary focusing on the career progression evident in this profile: {{PROFILE_DATA}}"></textarea>
+      <p class="info">If you leave this blank, a default detailed prompt will be used. If you fill this in, make sure to include the placeholder <code>{{PROFILE_DATA}}</code> where the scraped profile information should be inserted.</p>
+
+      <button id="save">Save Settings</button>
+      <p id="status"></p>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
